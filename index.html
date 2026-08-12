@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>THE ARCANA ── 存在しない名作STG</title>
+<meta property="og:title" content="THE ARCANA ── 存在しない名作STG">
+<meta property="og:description" content="タロット大アルカナ二十二枚が、一本のレトロシューティングになった。0番STAGE1から、順番にSTAGEを進めろ。">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://smil17990-arch.github.io/tarot-arcana/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#050208;
+    --panel:#0d0716;
+    --panel2:#150c22;
+    --magenta:#ff2079;
+    --cyan:#00e5ff;
+    --yellow:#ffe600;
+    --green:#39ff6a;
+    --text:#f0eef5;
+    --text-dim:#77708c;
+    --border:rgba(255,32,121,.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(255,32,121,.10), transparent 55%),
+      radial-gradient(ellipse at 50% 100%, rgba(0,229,255,.08), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    min-height:100vh;
+    padding:0 0 40px;
+    position:relative;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px);
+    pointer-events:none;
+    z-index:200;
+    mix-blend-mode:overlay;
+  }
+  .px{ font-family:'Press Start 2P', monospace; }
+  .dg{ font-family:'DotGothic16', monospace; }
+
+  .screen{ display:none; }
+  .screen.show{ display:block; animation:fadeIn .3s ease both; }
+  @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
+
+  /* ---- TITLE / ATTRACT SCREEN ---- */
+  #screen-title{
+    text-align:center;
+    padding:30px 20px;
+  }
+  #screen-title.show{
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .logo-wrap{ margin-bottom:36px; }
+  .logo-sub{
+    font-size:.62rem;
+    letter-spacing:.3em;
+    color:var(--cyan);
+    margin-bottom:16px;
+  }
+  .logo-main{
+    font-size:2.1rem;
+    line-height:1.5;
+    color:var(--text);
+    text-shadow:
+      2px 2px 0 var(--magenta),
+      -2px -2px 0 var(--cyan);
+    letter-spacing:.04em;
+  }
+  .logo-jp{
+    margin-top:18px;
+    font-size:.95rem;
+    color:var(--text-dim);
+    line-height:1.8;
+  }
+  .blink-text{
+    font-size:.85rem;
+    color:var(--yellow);
+    margin:10px 0;
+    animation:blinkText 1s step-end infinite;
+  }
+  @keyframes blinkText{ 50%{ opacity:0; } }
+  .start-btn{
+    margin-top:26px;
+    background:var(--magenta);
+    color:#fff;
+    border:none;
+    padding:16px 40px;
+    font-family:'Press Start 2P', monospace;
+    font-size:.85rem;
+    cursor:pointer;
+    box-shadow:0 6px 0 #8f0f45, 0 10px 20px rgba(0,0,0,.5);
+  }
+  .start-btn:active{ transform:translateY(4px); box-shadow:0 2px 0 #8f0f45; }
+  .coin-hint{
+    margin-top:36px;
+    font-size:.58rem;
+    color:var(--text-dim);
+    letter-spacing:.1em;
+  }
+
+  /* ---- HUD ---- */
+  .hud{
+    position:sticky; top:0; z-index:20;
+    background:var(--panel);
+    border-bottom:2px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 14px;
+    font-size:.6rem;
+  }
+  .hud .hud-left{ color:var(--green); }
+  .hud .hud-center{ color:var(--yellow); }
+  .hud .hud-right{ color:var(--cyan); }
+
+  main{ max-width:520px; margin:0 auto; padding:0 14px; position:relative; z-index:1; }
+
+  /* ---- STAGE SCREEN ---- */
+  .stage-banner{
+    text-align:center;
+    margin:20px 0 14px;
+  }
+  .stage-num{
+    font-size:.9rem;
+    color:var(--magenta);
+    text-shadow:0 0 8px rgba(255,32,121,.6);
+    margin-bottom:6px;
+  }
+  .stage-name{ font-size:1.35rem; font-weight:900; color:var(--text); }
+  .stage-name-en{ font-size:.6rem; color:var(--text-dim); letter-spacing:.12em; margin-top:4px; }
+
+  .arcade-screen{
+    position:relative;
+    border:3px solid var(--border);
+    border-radius:8px;
+    background:var(--panel);
+    padding:10px;
+    box-shadow:0 0 30px rgba(255,32,121,.15), inset 0 0 40px rgba(0,0,0,.6);
+    margin-bottom:16px;
+  }
+  .arcade-screen img{
+    width:100%; display:block; border-radius:3px;
+    image-rendering:pixelated;
+  }
+  .stage-label-banner{
+    text-align:center;
+    font-size:.72rem;
+    color:var(--cyan);
+    background:rgba(0,229,255,.08);
+    border:1px solid rgba(0,229,255,.35);
+    padding:9px 10px;
+    border-radius:5px;
+    margin-bottom:14px;
+    line-height:1.6;
+  }
+  .stage-body{
+    font-size:.94rem;
+    line-height:2;
+    color:var(--text);
+    margin:0 0 18px;
+  }
+  .stage-body strong{ color:var(--yellow); }
+
+  .stage-nav{
+    display:flex; gap:8px; margin-bottom:8px;
+  }
+  .stage-nav button{
+    flex:1;
+    font-family:'Press Start 2P', monospace;
+    font-size:.6rem;
+    background:var(--panel2);
+    color:var(--magenta);
+    border:1px solid var(--border);
+    padding:12px 6px;
+    border-radius:5px;
+    cursor:pointer;
+  }
+  .stage-nav button:disabled{ opacity:.25; cursor:default; }
+  .select-btn{
+    display:block;
+    width:100%;
+    text-align:center;
+    font-family:'Press Start 2P', monospace;
+    font-size:.6rem;
+    background:none;
+    color:var(--text-dim);
+    border:1px solid rgba(255,255,255,.15);
+    padding:10px;
+    border-radius:5px;
+    cursor:pointer;
+    margin-bottom:20px;
+  }
+
+  /* ---- GAME OVER special ---- */
+  .gameover-panel{
+    text-align:center;
+    padding:40px 16px;
+    border:3px solid var(--magenta);
+    border-radius:8px;
+    background:radial-gradient(ellipse at 50% 30%, rgba(255,32,121,.18), var(--panel));
+    margin-bottom:16px;
+  }
+  .gameover-title{
+    font-size:1.4rem;
+    color:var(--magenta);
+    text-shadow:0 0 14px rgba(255,32,121,.7);
+    margin-bottom:16px;
+    animation:blinkText 1.2s step-end infinite;
+  }
+  .gameover-sub{ font-size:.66rem; color:var(--text-dim); margin-bottom:26px; line-height:1.8; }
+  .continue-btn{
+    background:var(--yellow);
+    color:#1a1200;
+    border:none;
+    padding:14px 30px;
+    font-family:'Press Start 2P', monospace;
+    font-size:.7rem;
+    cursor:pointer;
+    box-shadow:0 5px 0 #9c8500;
+  }
+  .continue-btn:active{ transform:translateY(3px); box-shadow:0 2px 0 #9c8500; }
+
+  /* ---- STAGE SELECT SCREEN ---- */
+  .select-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:8px;
+    padding:16px 0 20px;
+  }
+  .select-item{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:6px;
+    text-align:center;
+    cursor:pointer;
+  }
+  .select-item:active{ background:var(--panel2); }
+  .select-item img{ width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:4px; margin-bottom:4px; image-rendering:pixelated; }
+  .select-item .si-num{ font-size:.55rem; color:var(--magenta); font-family:'Press Start 2P', monospace; }
+  .select-item .si-name{ font-size:.72rem; color:var(--text); margin-top:2px; }
+  .select-title{
+    text-align:center;
+    font-size:.9rem;
+    color:var(--cyan);
+    margin:20px 0 4px;
+  }
+
+  footer{
+    max-width:520px;
+    margin:30px auto 0;
+    padding:0 16px;
+    text-align:center;
+    font-size:.62rem;
+    color:var(--text-dim);
+    line-height:2;
+  }
+  footer a{ color:var(--cyan); }
+</style>
+</head>
+<body>
+
+<!-- TITLE SCREEN -->
+<section class="screen show" id="screen-title">
+  <div class="logo-wrap">
+    <div class="logo-sub px">EXISTS NOWHERE ── RETRO SHOOTING</div>
+    <div class="logo-main px">THE<br>ARCANA</div>
+    <div class="logo-jp">存在しない名作STG『THE ARCANA』<br>タロット大アルカナ二十二枚が、<br>一本のシューティングになった夜に</div>
+  </div>
+  <div class="blink-text px">PRESS START</div>
+  <button class="start-btn px" id="startBtn">START</button>
+  <div class="coin-hint px">全22 STAGE ／ データ保存なし</div>
+</section>
+
+<!-- STAGE SCREEN -->
+<section class="screen" id="screen-stage">
+  <div class="hud">
+    <div class="hud-left px" id="hudScore">1UP 0000000</div>
+    <div class="hud-center px" id="hudStage">STAGE 1/22</div>
+    <div class="hud-right px" id="hudLives">×3</div>
+  </div>
+  <main>
+    <div class="stage-banner">
+      <div class="stage-num px" id="cardNum"></div>
+      <div class="stage-name" id="cardName"></div>
+      <div class="stage-name-en px" id="cardNameEn"></div>
+    </div>
+
+    <div id="gameoverBlock" style="display:none;">
+      <div class="gameover-panel">
+        <div class="gameover-title px">GAME OVER</div>
+        <div class="gameover-sub px">…OR IS IT?</div>
+        <button class="continue-btn px" id="continueBtn">CONTINUE?</button>
+      </div>
+    </div>
+
+    <div id="stageContent">
+      <div class="arcade-screen"><img id="cardImg" src="" alt=""></div>
+      <div class="stage-label-banner dg" id="cardStageLabel"></div>
+      <div class="stage-body dg" id="cardBody"></div>
+    </div>
+
+    <div class="stage-nav">
+      <button class="px" id="prevBtn">◀ PREV</button>
+      <button class="px" id="nextBtn">NEXT ▶</button>
+    </div>
+    <button class="select-btn px" id="toSelectBtn">STAGE SELECT</button>
+  </main>
+</section>
+
+<!-- STAGE SELECT SCREEN -->
+<section class="screen" id="screen-select">
+  <div class="hud">
+    <div class="hud-left px" id="hudScore2">1UP 0000000</div>
+    <div class="hud-center px">STAGE SELECT</div>
+    <div class="hud-right px">×3</div>
+  </div>
+  <main>
+    <div class="select-title px">── SELECT STAGE ──</div>
+    <div class="select-grid" id="selectGrid"></div>
+    <button class="select-btn px" id="toStageBtn">戻る</button>
+  </main>
+</section>
+
+<footer>
+  文：Claude（Anthropic）／画：ChatGPT（DALL-E）<br>
+  原作note: <a href="https://note.com/vortex951/n/n1e5656e74f45" target="_blank" rel="noopener">存在しない名作STG『THE ARCANA』</a><br>
+  編集・演出：無限納豆
+</footer>
+
+<script>
+const CARDS = [
+{num:"0", name:"愚者", nameEn:"THE FOOL", stageLabel:"STAGE 1 START／残機3、旅立ち",
+ body:"何も持たず、ただ前へ。崖の縁を気にしないあの無邪気さは、そのまま「はじめる」ボタンだ。愚者の第一歩は、いつだってゲームの一投目。",
+ img:"1784693667-Iy3Rcsg7oiv4wk9VNdOG51fY.png"},
+{num:"Ⅰ", name:"魔術師", nameEn:"THE MAGICIAN", stageLabel:"POWER UP!／ショット強化",
+ body:"台の上に道具を並べ、意志ひとつで力に変える者。パワーアップアイテムを掴んで火力が跳ね上がる瞬間ほど、魔術師にふさわしい絵はない。「持てる力を、使いこなせ」。",
+ img:"1784693771-KniXSM3Qzqv9mJugsplWxF18.png"},
+{num:"Ⅱ", name:"女教皇", nameEn:"THE HIGH PRIESTESS", stageLabel:"TIME STOP／敵弾が止まる",
+ body:"沈黙し、動かず、すべてを見通す。彼女が手をかざせば、飛び交う弾のすべてが静止する。時間停止――知の女神の、いちばん静かな必殺技。",
+ img:"1784693821-dgFkoLIHbW7hCwGrqmliAT3Z.png"},
+{num:"Ⅲ", name:"女帝", nameEn:"THE EMPRESS", stageLabel:"OPTION GET!／オプション機（衛星）追加",
+ body:"豊穣と増殖の母。自機のまわりに、分身のような衛星が増えてゆく。ひとつが、ふたつ、みっつへ。産み、増やす女帝の力が、火力の数となって現れる。",
+ img:"1784693893-MrUFkg9EmiBy0sKJdWnI1loC.png"},
+{num:"Ⅳ", name:"皇帝", nameEn:"THE EMPEROR", stageLabel:"BOSS／重装甲ボス登場",
+ body:"秩序、支配、揺るがぬ権威。画面を埋め尽くす重装甲の巨体は、玉座に座る者そのものだ。立ちはだかる王を、突破せよ。",
+ img:"1784693926-ZM6CnV4pcaYi2ugj79bfBQle.png"},
+{num:"Ⅴ", name:"教皇", nameEn:"THE HIEROPHANT", stageLabel:"味方艦隊、援護射撃",
+ body:"伝統を継ぎ、導く者。孤独な戦いではない――背後から、味方の艦隊が援護の弾幕を重ねてくる。受け継がれた力が、共に撃つ。",
+ img:"1784693999-pBcq0NjCGDamJS12wXiOsRLg.png"},
+{num:"Ⅵ", name:"恋人", nameEn:"THE LOVERS", stageLabel:"2機同時プレイ",
+ body:"ふたつでひとつ。1Pと2P、青と赤の自機が並んで駆ける。選び、結ばれ、共に進む――恋人のカードは、協力プレイの画面で完成する。",
+ img:"1784694062-7LgpXNtr1uEMCVUZjdRcwqPa.png"},
+{num:"Ⅶ", name:"戦車", nameEn:"THE CHARIOT", stageLabel:"STAGE 1-3／高速スクロール",
+ body:"前進、疾走、意志の制御。景色が後ろへ飛んでいく高速スクロール面は、手綱を握って突き進む戦車の推進力そのものだ。止まらない、止められない。",
+ img:"1784694109-n4dtC7IhOyxSliUqBuW5VcPv.png"},
+{num:"Ⅷ", name:"力", nameEn:"STRENGTH", stageLabel:"CHARGE SHOT UNLOCKED!／チャージショット解放",
+ body:"猛るものを、腕力ではなく内なる強さで御する。溜めて、溜めて、静かに解き放つチャージショット。ゲージが満ちきる、あの張り詰めた沈黙こそが「力」だ。",
+ img:"1784694140-7vfxGOJ8sYjPNXKrABZngIai.png"},
+{num:"Ⅸ", name:"隠者", nameEn:"THE HERMIT", stageLabel:"STAGE 4／敵の少ない静かな宇宙",
+ body:"灯りをかざし、ひとり退く者。敵影のまばらな、しんと静まった宙域。喧騒のただなかにぽっかり空く孤独の一面が、隠者の時間になる。",
+ img:"1784694188-K3BaygqdOMevhmblC42JGR8Q.png"},
+{num:"Ⅹ", name:"運命の輪", nameEn:"WHEEL OF FORTUNE", stageLabel:"ルーレットでアイテム変化！",
+ body:"回り、巡り、何が出るかは天まかせ。1UP、ボム、$、スピードアップ――回転するルーレットの止まる先を、誰も選べない。運命の輪は、回すことしかできない。",
+ img:"1784694226-TjdgnK1H7D60Qu4Xc23JkbhB.png"},
+{num:"Ⅺ", name:"正義", nameEn:"JUSTICE", stageLabel:"STAGE 5-REFLECT／敵弾を反射せよ",
+ body:"因果は巡り、放った悪は放った者へ還る。正義の盾が展開し、撃たれた弾をそのまま撃ち返す。「すべての攻撃は、正義のもとに」。加害と裁きが、一枚の中で円環を閉じる。",
+ img:"1784695138-S7ixtOcd54UQbmTf6XwzZkBJ.png"},
+{num:"Ⅻ", name:"吊された男", nameEn:"THE HANGED MAN", stageLabel:"STAGE 6-INVERT／上下・重力反転",
+ body:"逆さに吊られ、世界の見え方が裏返る。画面が反転し、重力が逆流するステージ。「見方を変えれば、道は開ける」――停滞のなかの、視座の啓示。",
+ img:"1784695177-5hjcyrtWeN1nxlfS68zOAv3Y.png"},
+{num:"ⅩⅢ", name:"死", nameEn:"DEATH", stageLabel:"GAME OVER … OR IS IT?／CONTINUE?",
+ body:"死は終わりではなく、変容。撃墜され、画面が暗転し、しかしカウントは告げる――CONTINUE? まだ終わりじゃない。死のカードは、再生のボタンを差し出してくる。",
+ img:"1784695234-EKiIMToghuFw5OLjxPes9fCJ.png", special:"gameover"},
+{num:"ⅩⅣ", name:"節制", nameEn:"TEMPERANCE", stageLabel:"STAGE 7-FUSION／HYBRID SHOT",
+ body:"ふたつの水を注ぎ分け、混ぜ、中庸をつくる天使。レーザーとワイドショットを配合し、ハイブリッド弾を撃つ。攻と守の陰陽を、ひとつに調える。「調和こそ、最強への道」。",
+ img:"1784695305-1FrGmZYHitP0O4nvy2lcdhMD.png"},
+{num:"ⅩⅤ", name:"悪魔", nameEn:"THE DEVIL", stageLabel:"STAGE 5-BOSS／弾幕地獄",
+ body:"束縛と執着。自ら鎖を選んでいることに気づかない。画面を覆う弾幕のなか、「抗う意志こそ、鎖となる」――避けようともがくほど嵌まる。悪魔の罠は、心の側にある。",
+ img:"1784695434-xAcY4R9BU3nsy7k06Cgb1aqE.png"},
+{num:"ⅩⅥ", name:"塔", nameEn:"THE TOWER", stageLabel:"STAGE 6-BOSS／巨大要塞、崩壊中！",
+ body:"築かれたものが、一瞬で崩れ落ちる。炎上し瓦解していく巨大要塞。「突破せよ」。塔の倒壊は、破滅であると同時に、閉じ込めていたものからの解放だ。",
+ img:"1784695466-N9mkpqBS1fg6V8zHOsnZ7Uav.png"},
+{num:"ⅩⅦ", name:"星", nameEn:"THE STAR", stageLabel:"BONUS STAGE／星々の恵みを受け取れ！",
+ body:"嵐のあとの、静かな希望。降りそそぐアイテムを拾い集めるボーナス面。傷ついた旅の途中に、そっと差し出される恵みの時間。星は、また上を向かせてくれる。",
+ img:"1784695502-RAdhZCuk5amQ14lgxrpHEB3G.png"},
+{num:"ⅩⅧ", name:"月", nameEn:"THE MOON", stageLabel:"STAGE 7-SECRET／幻影が惑わす",
+ body:"不安、幻惑、見えているものが本当とは限らない。「FAKE」の札を貼られた偽アイテムが、あちこちで手招きする。「真実を見極めよ」。月の面では、目に映るものを疑うことだけが正解だ。",
+ img:"1784695541-zQ72pTdtYSLNUZelnXyiVvfG.png"},
+{num:"ⅩⅨ", name:"太陽", nameEn:"THE SUN", stageLabel:"STAGE 8-ULTIMATE／FULL POWER!",
+ body:"生命、成功、惜しみない輝き。全ゲージが満ち、フルパワーが解き放たれる。「太陽の力、全開放。今こそ、進む時」――迷いの晴れた、まっすぐな光。",
+ img:"1784695575-4JzNyarBbwhYS0VcRteGKHUn.png"},
+{num:"ⅩⅩ", name:"審判", nameEn:"JUDGEMENT", stageLabel:"STAGE 9-FINAL／歴代の力、ここに結集せり",
+ body:"呼び集められ、よみがえり、最後の戦いへ。これまでの全機体、全アルカナの力がひとつの画面に集う最終決戦。「すべての時を超え、いま集う」。審判のラッパが、総力戦の合図を鳴らす。",
+ img:"1784695640-OlGBaKon1dSgtij2eJpXI7Vr.png"},
+{num:"ⅩⅩⅠ", name:"世界", nameEn:"THE WORLD", stageLabel:"STAGE 10-ENDING／すべての戦いが終わった",
+ body:"完成、達成、そして帰還。地球を望むエンディング。流れるスタッフロールに、歴代のアルカナが「TEST PILOTS」として名を連ね、最後にこう出る――「AND YOU!」。\n\n君の旅は、ここで終わりではない。\n\n新しい世界が、また君を待っている。",
+ img:"1784695675-m4Y7tgGBPE9D1X58FcoiZTJ0.png"}
+];
+
+const IMG_BASE = "https://assets.st-note.com/img/";
+function imgUrl(f){ return IMG_BASE + f + "?width=1200"; }
+const $ = (id) => document.getElementById(id);
+
+let currentIndex = 0;
+let score = 0;
+
+function pad(n){ return String(n).padStart(7,"0"); }
+function updateHud(){
+  $("hudScore").textContent = "1UP " + pad(score);
+  $("hudScore2").textContent = "1UP " + pad(score);
+  $("hudStage").textContent = "STAGE " + (currentIndex+1) + "/" + CARDS.length;
+}
+
+function renderCard(i, opts){
+  opts = opts || {};
+  const c = CARDS[i];
+  $("cardNum").textContent = "第" + c.num + "図";
+  $("cardName").textContent = c.name;
+  $("cardNameEn").textContent = c.nameEn;
+  $("cardImg").src = imgUrl(c.img);
+  $("cardImg").alt = c.name;
+  $("cardStageLabel").textContent = c.stageLabel;
+  $("cardBody").innerHTML = c.body.split("\n\n").map(p=>"<p style='margin:0 0 14px'>"+p+"</p>").join("");
+
+  if(c.special === "gameover" && !opts.skipGameover){
+    $("gameoverBlock").style.display = "block";
+    $("stageContent").style.display = "none";
+  } else {
+    $("gameoverBlock").style.display = "none";
+    $("stageContent").style.display = "block";
+  }
+
+  $("prevBtn").disabled = (i === 0);
+  $("nextBtn").disabled = (i === CARDS.length - 1);
+  updateHud();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function goToStage(i, opts){
+  currentIndex = i;
+  switchScreen("stage");
+  renderCard(i, opts);
+}
+
+$("continueBtn").addEventListener("click", ()=>{
+  $("gameoverBlock").style.display = "none";
+  $("stageContent").style.display = "block";
+});
+
+$("startBtn").addEventListener("click", ()=>{
+  score = 0;
+  goToStage(0);
+});
+
+$("prevBtn").addEventListener("click", ()=>{
+  if(currentIndex > 0){ goToStage(currentIndex - 1); }
+});
+$("nextBtn").addEventListener("click", ()=>{
+  if(currentIndex < CARDS.length - 1){
+    score += 1000;
+    goToStage(currentIndex + 1);
+  }
+});
+
+$("toSelectBtn").addEventListener("click", ()=>{ switchScreen("select"); });
+$("toStageBtn").addEventListener("click", ()=>{ switchScreen("stage"); });
+
+function buildSelect(){
+  const wrap = $("selectGrid");
+  wrap.innerHTML = "";
+  CARDS.forEach((c, i)=>{
+    const el = document.createElement("div");
+    el.className = "select-item";
+    el.innerHTML =
+      '<img src="' + imgUrl(c.img) + '" alt="' + c.name + '">' +
+      '<div class="si-num">ST.' + (i+1) + '</div>' +
+      '<div class="si-name">' + c.name + '</div>';
+    el.addEventListener("click", ()=>{
+      goToStage(i, {skipGameover: c.special === "gameover"});
+    });
+    wrap.appendChild(el);
+  });
+}
+
+function switchScreen(name){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("show"));
+  $("screen-" + name).classList.add("show");
+}
+
+buildSelect();
+</script>
+</body>
+</html>
