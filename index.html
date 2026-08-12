@@ -120,9 +120,19 @@
     padding:10px 14px;
     font-size:.6rem;
   }
-  .hud .hud-left{ color:var(--green); }
+  .hud .hud-left{ color:var(--green); display:flex; align-items:center; gap:8px; }
   .hud .hud-center{ color:var(--yellow); }
   .hud .hud-right{ color:var(--cyan); }
+  .home-btn{
+    width:26px; height:26px;
+    border-radius:50%;
+    background:var(--panel2);
+    border:1.5px solid var(--magenta);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .home-btn svg{ width:13px; height:13px; }
 
   main{ max-width:520px; margin:0 auto; padding:0 14px; position:relative; z-index:1; }
 
@@ -286,7 +296,10 @@
 <!-- STAGE SCREEN -->
 <section class="screen" id="screen-stage">
   <div class="hud">
-    <div class="hud-left px" id="hudScore">1UP 0000000</div>
+    <div class="hud-left px" id="hudScore">
+      <button class="home-btn" id="homeBtn1" aria-label="タイトルに戻る"><svg viewBox="0 0 24 24" fill="none" stroke="var(--magenta)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg></button>
+      <span id="hudScoreText">1UP 0000000</span>
+    </div>
     <div class="hud-center px" id="hudStage">STAGE 1/22</div>
     <div class="hud-right px" id="hudLives">×3</div>
   </div>
@@ -322,7 +335,10 @@
 <!-- STAGE SELECT SCREEN -->
 <section class="screen" id="screen-select">
   <div class="hud">
-    <div class="hud-left px" id="hudScore2">1UP 0000000</div>
+    <div class="hud-left px">
+      <button class="home-btn" id="homeBtn2" aria-label="タイトルに戻る"><svg viewBox="0 0 24 24" fill="none" stroke="var(--magenta)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg></button>
+      <span id="hudScore2">1UP 0000000</span>
+    </div>
     <div class="hud-center px">STAGE SELECT</div>
     <div class="hud-right px">×3</div>
   </div>
@@ -418,7 +434,7 @@ let score = 0;
 
 function pad(n){ return String(n).padStart(7,"0"); }
 function updateHud(){
-  $("hudScore").textContent = "1UP " + pad(score);
+  $("hudScoreText").textContent = "1UP " + pad(score);
   $("hudScore2").textContent = "1UP " + pad(score);
   $("hudStage").textContent = "STAGE " + (currentIndex+1) + "/" + CARDS.length;
 }
@@ -473,6 +489,13 @@ $("nextBtn").addEventListener("click", ()=>{
     goToStage(currentIndex + 1);
   }
 });
+
+function goHome(){
+  switchScreen("title");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+$("homeBtn1").addEventListener("click", goHome);
+$("homeBtn2").addEventListener("click", goHome);
 
 $("toSelectBtn").addEventListener("click", ()=>{ switchScreen("select"); });
 $("toStageBtn").addEventListener("click", ()=>{ switchScreen("stage"); });
